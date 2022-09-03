@@ -45,3 +45,9 @@ This option can be useful if you only want to toggle the visibility of certain f
 ## Things you need to know
 
 - The extension works per workspace, does not modify the global settings so toggling excluded files will only affect your current active workspace.
+  
+## Contribution
+
+This project welcomes contributions and suggestions. Feel free to open an issue if you find an error, PR's are welcome.
+
+This project was created byby [Biati Digital](https://www.biati.com.mx), if you find it useful please consider adding a review and share it with the world.
