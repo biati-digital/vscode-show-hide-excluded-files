@@ -2,7 +2,7 @@
 	"name": "vscode-show-hide-excluded-files",
 	"displayName": "Show/Hide Excluded Files",
 	"description": "Quickly Show/Hide hidden files in the file explorer",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"publisher": "biati",
 	"author": {
 		"name": "Biati Digital",
