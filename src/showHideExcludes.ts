@@ -124,6 +124,7 @@ export class ShowHideExcludes {
         this.updateStatusBar(status);
         vscode.commands.executeCommand('setContext', 'biati.excludedStatus', status);
 
+        // When hiding, store whether the user had workspace excludes defined
         const existingWorkspaceExcludes = this.hasWorkspaceExcludes();
         if (!existingWorkspaceExcludes) {
             this.storageSet('hadEmptyWorkspaceExcludes', true);
@@ -137,10 +138,9 @@ export class ShowHideExcludes {
 
 
     showExcludes(): void {
-        // When hiding, if the user had no workspace excludes then
+        // When showing, if the user had no workspace excludes then
         // simply delete the excludes from the workspace configuration
         if (this.storageGet('hadEmptyWorkspaceExcludes')) {
-            console.log('reset!')
             this.resetWorkspaceExcludes();
         } else {
             this.updateExcludes(this.updateExcludesValue('show'));
