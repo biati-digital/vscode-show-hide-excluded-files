@@ -65,6 +65,16 @@
 						"**/Thumbs.db"
 					],
 					"description": "If you dont want to change the status of some files you can add them here, they must be exactly as they appear in the files.exclude option. The files on this list will not be touched by this extension"
+				},
+				"showHideExcludedConfig.exclude": {
+					"order": 4,
+					"type": "array",
+					"properties": {
+						"type": "string",
+						"title": "Ignore this excludes"
+					},
+					"default": [],
+					"description": "Static exclude list used to generate files.exclude"
 				}
 			}
 		},
