@@ -23,10 +23,20 @@ export class ShowHideExcludes {
         }
 
         vscode.workspace.onDidChangeConfiguration(event => {
-            let configUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig");
+            const configUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig");
             if (configUpdated) {
                 const statusBarVisible = this.extensionConfig('showStatusBar');
                 statusBarVisible ? this.statusBar.show() : this.statusBar.hide();
+            }
+
+            const excludeUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig.exclude");
+            if(excludeUpdated) {
+                // Force update the hidden list
+                if(this.excludeIsHidden) {
+                    this.hideExcludes();
+                } else {
+                    this.showExcludes();
+                }
             }
         });
     }
