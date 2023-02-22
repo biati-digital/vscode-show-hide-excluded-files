@@ -23,10 +23,20 @@ export class ShowHideExcludes {
         }
 
         vscode.workspace.onDidChangeConfiguration(event => {
-            let configUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig");
+            const configUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig");
             if (configUpdated) {
                 const statusBarVisible = this.extensionConfig('showStatusBar');
                 statusBarVisible ? this.statusBar.show() : this.statusBar.hide();
+            }
+
+            const excludeUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig.exclude");
+            if(excludeUpdated) {
+                // Force update the hidden list
+                if(this.excludeIsHidden) {
+                    this.hideExcludes();
+                } else {
+                    this.showExcludes();
+                }
             }
         });
     }
@@ -42,12 +52,23 @@ export class ShowHideExcludes {
     get userExcludes(): ExcludeOptions {
         let userExcludes = vscode.workspace.getConfiguration('files.exclude');
         let systemFiles: string[] = ['**/.DS_Store', '**/Thumbs.db'];
+        let defaultExcludes = this.defaultExcludes;
+
         let ignores: string[] = this.extensionConfig('ignoreExcludes') as string[];
         let excludes: ExcludeOptions = {};
-
+        let forceRemove = this.compareDefaultExcludes(defaultExcludes);
+        
+       
         for (const key in userExcludes) {
             if (userExcludes.hasOwnProperty(key) && !ignores.includes(key)) {
                 excludes[key] = userExcludes[key];
+            }
+        }
+
+        // Check if user excludes doesn't have the default exclude and if not add it
+        for (const key of this.defaultExcludes) {
+            if (!userExcludes.hasOwnProperty(key)) {
+                excludes[key] = false;
             }
         }
 
@@ -59,11 +80,45 @@ export class ShowHideExcludes {
             }
         }
 
+        // Remove files that were removed from the default exclude list
+        for(const file of forceRemove) {
+            if (excludes?.hasOwnProperty(file)) {
+                delete excludes[file];
+            }
+        }
+
         console.log('ignores', ignores);
+        console.log('defaultExcludes', defaultExcludes);
         console.log('userExcludes', userExcludes);
         console.log('excludes', excludes);
 
         return excludes;
+    }
+
+    get defaultExcludes() : string[] {
+        const machineConfig = vscode.workspace.getConfiguration();
+        return machineConfig.get('showHideExcludedConfig.exclude', []);
+    }
+
+    compareDefaultExcludes(excludes: string[]) {
+        const remove : string[] = [];
+
+        // Get the previously saved excluded list
+        const savedExcludes = this.storageGet('excludedList', []);
+
+        // Check if the new exclude list omits a previously excluded item
+        // If its missing, mark it for removal
+        savedExcludes.forEach((file: string) => {
+            if(excludes.includes(file) === false) {
+                remove.push(file);
+            }
+        });
+
+        // Update the excluded storage
+        this.storageSet('excludedList', excludes ?? []);
+
+        // Return the files to force remove from the exclude list
+        return remove;
     }
 
     toggle(): void {
@@ -79,11 +134,12 @@ export class ShowHideExcludes {
         this.updateStatusBar(status);
         vscode.commands.executeCommand('setContext', 'biati.excludedStatus', status);
 
-        // When hiding, if the user had no workspace excludes then
-        // simply delete the excludes from the workspace configuration
-        if (this.storageGet('hadEmptyWorkspaceExcludes')) {
-            this.resetWorkspaceExcludes();
-            return;
+        // When hiding, store whether the user had workspace excludes defined
+        const existingWorkspaceExcludes = this.hasWorkspaceExcludes();
+        if (!existingWorkspaceExcludes) {
+            this.storageSet('hadEmptyWorkspaceExcludes', true);
+        } else {
+            this.storageSet('hadEmptyWorkspaceExcludes', false);
         }
 
         // If there were other excludes then update the exclude status
@@ -92,15 +148,15 @@ export class ShowHideExcludes {
 
 
     showExcludes(): void {
-        const existingWokspaceExcludes = this.hasWorkspaceExcludes();
-        if (!existingWokspaceExcludes) {
-            this.storageSet('hadEmptyWorkspaceExcludes', true);
+        // When showing, if the user had no workspace excludes then
+        // simply delete the excludes from the workspace configuration
+        if (this.storageGet('hadEmptyWorkspaceExcludes')) {
+            this.resetWorkspaceExcludes();
         } else {
-            this.storageSet('hadEmptyWorkspaceExcludes', false);
+            this.updateExcludes(this.updateExcludesValue('show'));
         }
 
         this.storageSet('excludedStatus', 'on');
-        this.updateExcludes(this.updateExcludesValue('show'));
         this.updateStatusBar('on');
         vscode.commands.executeCommand('setContext', 'biati.excludedStatus', 'on');
     }
