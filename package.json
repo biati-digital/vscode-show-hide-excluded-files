@@ -89,11 +89,13 @@
 			"explorer/context": [
 				{
 					"command": "biati.excludedfiles.show",
-					"when": "workspaceFolderCount >= 1 && biati.excludedStatus == 'off'"
+					"when": "workspaceFolderCount >= 1 && biati.excludedStatus == 'off'",
+					"group": "zshowhide"
 				},
 				{
 					"command": "biati.excludedfiles.hide",
-					"when": "workspaceFolderCount >= 1 && biati.excludedStatus == 'on'"
+					"when": "workspaceFolderCount >= 1 && biati.excludedStatus == 'on'",
+					"group": "zshowhide"
 				}
 			]
 		}
