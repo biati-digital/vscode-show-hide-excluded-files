@@ -30,9 +30,9 @@ export class ShowHideExcludes {
             }
 
             const excludeUpdated: boolean = event.affectsConfiguration("showHideExcludedConfig.exclude");
-            if(excludeUpdated) {
+            if (excludeUpdated) {
                 // Force update the hidden list
-                if(this.excludeIsHidden) {
+                if (this.excludeIsHidden) {
                     this.hideExcludes();
                 } else {
                     this.showExcludes();
@@ -57,8 +57,8 @@ export class ShowHideExcludes {
         let ignores: string[] = this.extensionConfig('ignoreExcludes') as string[];
         let excludes: ExcludeOptions = {};
         let forceRemove = this.compareDefaultExcludes(defaultExcludes);
-        
-       
+
+
         for (const key in userExcludes) {
             if (userExcludes.hasOwnProperty(key) && !ignores.includes(key)) {
                 excludes[key] = userExcludes[key];
@@ -81,27 +81,22 @@ export class ShowHideExcludes {
         }
 
         // Remove files that were removed from the default exclude list
-        for(const file of forceRemove) {
+        for (const file of forceRemove) {
             if (excludes?.hasOwnProperty(file)) {
                 delete excludes[file];
             }
         }
 
-        console.log('ignores', ignores);
-        console.log('defaultExcludes', defaultExcludes);
-        console.log('userExcludes', userExcludes);
-        console.log('excludes', excludes);
-
         return excludes;
     }
 
-    get defaultExcludes() : string[] {
+    get defaultExcludes(): string[] {
         const machineConfig = vscode.workspace.getConfiguration();
         return machineConfig.get('showHideExcludedConfig.exclude', []);
     }
 
     compareDefaultExcludes(excludes: string[]) {
-        const remove : string[] = [];
+        const remove: string[] = [];
 
         // Get the previously saved excluded list
         const savedExcludes = this.storageGet('excludedList', []);
@@ -109,7 +104,7 @@ export class ShowHideExcludes {
         // Check if the new exclude list omits a previously excluded item
         // If its missing, mark it for removal
         savedExcludes.forEach((file: string) => {
-            if(excludes.includes(file) === false) {
+            if (excludes.includes(file) === false) {
                 remove.push(file);
             }
         });
